@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Sommelier's Cadence</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --text-color: #e0e0e0;
+            --primary-color: #c5b358; /* Gold */
+            --dark-grey: #2c2c2c;
+            --light-grey: #444444;
+            --correct-color: #4CAF50;
+            --incorrect-color: #D32F2F;
+            --font-serif: 'Cormorant Garamond', serif;
+            --font-sans: 'Lato', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-size: 16px;
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 600px;
+            background-color: var(--dark-grey);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .screen {
+            padding: 30px 40px;
+            text-align: center;
+            display: none; /* Hidden by default */
+        }
+
+        .screen.active {
+            display: block;
+        }
+        
+        /* Start Screen */
+        #start-screen h1 {
+            font-family: var(--font-serif);
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        #start-screen p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            background-color: var(--primary-color);
+            color: var(--bg-color);
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(197, 179, 88, 0.3);
+        }
+
+        /* Game Screen */
+        #game-screen {
+            position: relative;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            background-color: var(--light-grey);
+            border-radius: 5px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 10px;
+            background-color: var(--primary-color);
+            transition: width 0.3s ease-in-out;
+        }
+        
+        #question-category {
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        #question-text {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 30px;
+            min-height: 50px;
+        }
+
+        .answer-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .answer-btn {
+            background-color: var(--light-grey);
+            color: var(--text-color);
+            border: 2px solid var(--light-grey);
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .answer-btn:hover {
+            border-color: var(--primary-color);
+        }
+        
+        .answer-btn.correct {
+            background-color: var(--correct-color);
+            border-color: var(--correct-color);
+            color: white;
+        }
+
+        .answer-btn.incorrect {
+            background-color: var(--incorrect-color);
+            border-color: var(--incorrect-color);
+            color: white;
+        }
+
+        .answer-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+
+        #score-display {
+            position: absolute;
+            top: 25px;
+            right: 40px;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+
+        /* End Screen */
+        #end-screen h2 {
+            font-family: var(--font-serif);
+            font-size: 2.5rem;
+            color: var(--primary-color);
+        }
+
+        #final-score {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+        }
+
+        #correct-wine-info {
+            background-color: var(--bg-color);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        #correct-wine-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0;
+        }
+        
+        #correct-wine-region {
+            font-size: 1.1rem;
+            margin: 5px 0 0 0;
+        }
+        
+        @media (max-width: 500px) {
+            body {
+                padding: 10px;
+            }
+            .screen {
+                padding: 20px;
+            }
+             #start-screen h1 {
+                font-size: 2.5rem;
+             }
+             .answer-options {
+                grid-template-columns: 1fr;
+             }
+             #score-display {
+                 position: static;
+                 margin-bottom: 15px;
+             }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+
+        <!-- Start Screen -->
+        <div id="start-screen" class="screen active">
+            <h1>The Sommelier's Cadence</h1>
+            <p>Welcome to your virtual tasting room. A classic wine has been poured. Follow the deductive tasting grid to identify it. Your speed and accuracy are key. Good luck.</p>
+            <button id="start-btn" class="btn">Begin Tasting</button>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game-screen" class="screen">
+            <div id="score-display">Score: 0</div>
+            <div class="progress-bar-container">
+                <div class="progress-bar"></div>
+            </div>
+            <h2 id="question-category">Sight</h2>
+            <p id="question-text">What is the wine's intensity of color?</p>
+            <div id="answer-options-container" class="answer-options">
+                <!-- Answer buttons will be dynamically inserted here -->
+            </div>
+        </div>
+
+        <!-- End Screen -->
+        <div id="end-screen" class="screen">
+            <h2>Tasting Complete</h2>
+            <p id="final-score">Your Final Score: 18/20</p>
+            <div id="correct-wine-info">
+                <p style="margin-top:0; font-weight:bold;">The wine was:</p>
+                <h3 id="correct-wine-name">Chardonnay</h3>
+                <p id="correct-wine-region">Napa Valley, USA</p>
+            </div>
+            <button id="play-again-btn" class="btn">Taste Another Wine</button>
+        </div>
+
+    </div>
+
+    <script>
+        // --- PARADIGM DATABASE --- //
+        // This is the core data transcribed from your document.
+        const paradigms = [
+            // --- WHITE WINES --- //
+            {
+                name: "Chardonnay, Chablis Premier Cru",
+                type: "White",
+                sight: { "Clarity": "Clear", "Intensity of Color": "Pale", "Primary Color": "Straw", "Secondary Color(s)": ["Green", "Silver"], "Tearing": "Medium", "Gas Evidence": "No" },
+                nose: { "Aromatic Intensity": "Medium Plus", "Age Assessment": "Youthful", "Fruit": ["Green Apple", "Yellow Apple", "Green Pear", "Lemon"], "Fruit Condition": "Tart", "Non-Fruit": ["White Flowers", "Apple Blossoms", "Lees", "Crème Fraîche", "Flint", "Burnt Match"], "Earth": "High Inorganic Earth", "Mineral": ["Stony", "Chalk", "Saline/Seaspray", "Oyster Shell"], "Oak": "No New Oak" },
+                palate: { "Sweetness": "Bone Dry", "Acidity": "High", "Alcohol": "Medium", "Body": "Medium Plus", "Phenolic Bitterness": "No", "Texture": "Lean and Linear", "Length of Finish": "Long", "Complexity": "High" },
+                conclusion: { finalGrape: "Chardonnay", finalCountry: "France", finalRegion: "Chablis Premier Cru" }
+            },
+            {
+                name: "Chardonnay, Côte de Beaune",
+                type: "White",
+                sight: { "Clarity": "Clear", "Intensity of Color": "Medium", "Primary Color": "Straw", "Secondary Color(s)": ["Gold"], "Tearing": "Medium Plus", "Gas Evidence": "No" },
+                nose: { "Aromatic Intensity": "Medium Plus", "Age Assessment": "Youthful", "Fruit": ["Yellow Apple", "Yellow Pear", "White Peach", "Lemon Curd"], "Fruit Condition": "Ripe", "Non-Fruit": ["White Flowers", "Toasted Almond", "Hazelnut", "Butter", "Crème Fraîche"], "Earth": "Medium Inorganic Earth", "Mineral": ["Limestone", "Chalk", "Stony"], "Oak": "Medium New Oak" },
+                palate: { "Sweetness": "Dry", "Acidity": "Medium Plus", "Alcohol": "Medium Plus", "Body": "Medium Plus", "Phenolic Bitterness": "No", "Texture": "Creamy", "Length of Finish": "Long", "Complexity": "High" },
+                conclusion: { finalGrape: "Chardonnay", finalCountry: "France", finalRegion: "Côte de Beaune" }
+            },
+            {
+                name: "Chardonnay, Napa Valley",
+                type: "White",
+                sight: { "Clarity": "Clear", "Intensity of Color": "Medium to Deep", "Primary Color": "Gold", "Secondary Color(s)": [], "Tearing": "Heavy", "Gas Evidence": "No" },
+                nose: { "Aromatic Intensity": "Powerful", "Age Assessment": "Youthful", "Fruit": ["Baked Apple", "Pineapple", "Cantaloupe", "Lemon Curd"], "Fruit Condition": "Baked", "Non-Fruit": ["Butterscotch", "Caramel", "Vanilla", "Coconut"], "Earth": "Low Organic Earth", "Mineral": ["Low"], "Oak": "High New Oak" },
+                palate: { "Sweetness": "Dry", "Acidity": "Medium", "Alcohol": "Medium Plus to High", "Body": "Full", "Phenolic Bitterness": "No", "Texture": "Viscous", "Length of Finish": "Long", "Complexity": "High" },
+                conclusion: { finalGrape: "Chardonnay", finalCountry: "USA", finalRegion: "Napa Valley" }
+            },
+            {
+                name: "Sauvignon Blanc, Sancerre",
+                type: "White",
+                sight: { "Clarity": "Clear", "Intensity of Color": "Pale", "Primary Color": "Straw", "Secondary Color(s)": ["Green", "Silver"], "Tearing": "Medium", "Gas Evidence": "No" },
+                nose: { "Aromatic Intensity": "Medium Plus", "Age Assessment": "Youthful", "Fruit": ["Grapefruit", "Lime", "Green Apple", "White Peach"], "Fruit Condition": "Tart", "Non-Fruit": ["Gooseberry", "Grass", "Bell Pepper", "Flint"], "Earth": "High Inorganic Earth", "Mineral": ["Stony", "Limestone", "Chalk"], "Oak": "No New Oak" },
+                palate: { "Sweetness": "Dry", "Acidity": "High", "Alcohol": "Medium", "Body": "Medium", "Phenolic Bitterness": "No", "Texture": "Lean and Linear", "Length of Finish": "Medium Plus", "Complexity": "Medium Plus" },
+                conclusion: { finalGrape: "Sauvignon Blanc", finalCountry: "France", finalRegion: "Sancerre" }
+            },
+            {
+                name: "Sauvignon Blanc, Marlborough",
+                type: "White",
+                sight: { "Clarity": "Clear", "Intensity of Color": "Pale", "Primary Color": "Straw", "Secondary Color(s)": ["Green"], "Tearing": "Medium", "Gas Evidence": "No" },
+                nose: { "Aromatic Intensity": "Powerful", "Age Assessment": "Youthful", "Fruit": ["Grapefruit", "Passion Fruit", "Guava"], "Fruit Condition": "Ripe", "Non-Fruit": ["Jalapeño", "Cut Grass", "Gooseberry", "Bell Pepper"], "Earth": "None", "Mineral": ["None"], "Oak": "No New Oak" },
+                palate: { "Sweetness": "Dry", "Acidity": "High", "Alcohol": "Medium", "Body": "Medium", "Phenolic Bitterness": "Slight", "Texture": "Crisp", "Length of Finish": "Medium Plus", "Complexity": "Medium Plus" },
+                conclusion: { finalGrape: "Sauvignon Blanc", finalCountry: "New Zealand", finalRegion: "Marlborough" }
+            },
+            {
+                name: "Riesling, Clare Valley",
+                type: "White",
+                sight: { "Clarity": "Clear", "Intensity of Color": "Water White", "Primary Color": "Straw", "Secondary Color(s)": ["Green", "Silver"], "Tearing": "Light", "Gas Evidence": "No" },
+                nose: { "Aromatic Intensity": "Medium Plus", "Age Assessment": "Youthful", "Fruit": ["Lime", "Green Apple"], "Fruit Condition": "Tart", "Non-Fruit": ["White Flowers", "Petrol/Kerosene (with age)"], "Earth": "High Inorganic Earth", "Mineral": ["Slate", "Stony"], "Oak": "No New Oak" },
+                palate: { "Sweetness": "Bone Dry", "Acidity": "High", "Alcohol": "Low to Medium Minus", "Body": "Light", "Phenolic Bitterness": "No", "Texture": "Lean and Linear", "Length of Finish": "Medium Plus", "Complexity": "Medium Plus" },
+                conclusion: { finalGrape: "Riesling", finalCountry: "Australia", finalRegion: "Clare Valley" }
+            },
+            {
+                name: "Riesling, Kabinett",
+                type: "White",
+                sight: { "Clarity": "Clear", "Intensity of Color": "Pale", "Primary Color": "Straw", "Secondary Color(s)": ["Green", "Silver"], "Tearing": "Light", "Gas Evidence": "Yes" },
+                nose: { "Aromatic Intensity": "Medium Plus", "Age Assessment": "Youthful", "Fruit": ["Green Apple", "White Peach", "Lime"], "Fruit Condition": "Tart to Just-Ripe", "Non-Fruit": ["White Flowers"], "Earth": "High Inorganic Earth", "Mineral": ["Slate", "Stony"], "Oak": "No New Oak" },
+                palate: { "Sweetness": "Off-Dry", "Acidity": "High", "Alcohol": "Low", "Body": "Light", "Phenolic Bitterness": "No", "Texture": "Crisp", "Length of Finish": "Medium Plus", "Complexity": "Medium Plus" },
+                conclusion: { finalGrape: "Riesling", finalCountry: "Germany", finalRegion: "Mosel (Kabinett)" }
+            },
+            {
+                name: "Chenin Blanc, Savennières",
+                type: "White",
+                sight: { "Clarity": "Clear", "Intensity of Color": "Medium", "Primary Color": "Yellow", "Secondary Color(s)": ["Gold"], "Tearing": "Medium", "Gas Evidence": "No" },
+                nose: { "Aromatic Intensity": "Medium Plus", "Age Assessment": "Youthful", "Fruit": ["Quince", "Yellow Apple", "Chamomile"], "Fruit Condition": "Tart", "Non-Fruit": ["Beeswax", "Lanolin", "Wet Wool"], "Earth": "Medium Inorganic Earth", "Mineral": ["Stony", "Flint"], "Oak": "Neutral Oak" },
+                palate: { "Sweetness": "Bone Dry", "Acidity": "High", "Alcohol": "Medium to Medium Plus", "Body": "Medium Plus", "Phenolic Bitterness": "Slight", "Texture": "Waxy", "Length of Finish": "Long", "Complexity": "High" },
+                conclusion: { finalGrape: "Chenin Blanc", finalCountry: "France", finalRegion: "Savennières" }
+            },
+            {
+                name: "Pinot Gris, Alsace Grand Cru",
+                type: "White",
+                sight: { "Clarity": "Clear", "Intensity of Color": "Medium", "Primary Color": "Gold", "Secondary Color(s)": ["Copper"], "Tearing": "Medium Plus", "Gas Evidence": "No" },
+                nose: { "Aromatic Intensity": "Medium Plus", "Age Assessment": "Youthful", "Fruit": ["Baked Apple", "Pear", "White Peach", "Apricot"], "Fruit Condition": "Ripe", "Non-Fruit": ["Honeysuckle", "Mushroom", "Smoke"], "Earth": "Medium Inorganic Earth", "Mineral": ["Stony"], "Oak": "Neutral Oak" },
+                palate: { "Sweetness": "Off-Dry", "Acidity": "Medium", "Alcohol": "Medium Plus", "Body": "Full", "Phenolic Bitterness": "Slight", "Texture": "Oily", "Length of Finish": "Long", "Complexity": "High" },
+                conclusion: { finalGrape: "Pinot Gris", finalCountry: "France", finalRegion: "Alsace Grand Cru" }
+            },
+            {
+                name: "Grüner Veltliner, Smaragd",
+                type: "White",
+                sight: { "Clarity": "Clear", "Intensity of Color": "Pale", "Primary Color": "Straw", "Secondary Color(s)": ["Green"], "Tearing": "Medium", "Gas Evidence": "No" },
+                nose: { "Aromatic Intensity": "Medium Plus", "Age Assessment": "Youthful", "Fruit": ["Green Apple", "Lime", "White Grapefruit"], "Fruit Condition": "Tart", "Non-Fruit": ["White Pepper", "Radish", "Lentil", "Arugula"], "Earth": "Medium Inorganic Earth", "Mineral": ["Stony"], "Oak": "No New Oak" },
+                palate: { "Sweetness": "Dry", "Acidity": "High", "Alcohol": "Medium Plus", "Body": "Medium Plus", "Phenolic Bitterness": "Slight", "Texture": "Lean", "Length of Finish": "Long", "Complexity": "High" },
+                conclusion: { finalGrape: "Grüner Veltliner", finalCountry: "Austria", finalRegion: "Wachau (Smaragd)" }
+            },
+            {
+                name: "Albariño, Rías Baixas",
+                type: "White",
+                sight: { "Clarity": "Clear", "Intensity of Color": "Pale", "Primary Color": "Straw", "Secondary Color(s)": ["Green", "Silver"], "Tearing": "Medium", "Gas Evidence": "Yes" },
+                nose: { "Aromatic Intensity": "Medium Plus", "Age Assessment": "Youthful", "Fruit": ["Grapefruit", "Lime", "Green Apple", "White Peach"], "Fruit Condition": "Tart", "Non-Fruit": ["White Flowers"], "Earth": "High Inorganic Earth", "Mineral": ["Saline/Seaspray", "Stony"], "Oak": "No New Oak" },
+                palate: { "Sweetness": "Dry", "Acidity": "High", "Alcohol": "Medium", "Body": "Medium", "Phenolic Bitterness": "Slight", "Texture": "Crisp", "Length of Finish": "Medium Plus", "Complexity": "Medium Plus" },
+                conclusion: { finalGrape: "Albariño", finalCountry: "Spain", finalRegion: "Rías Baixas" }
+            },
+            {
+                name: "Viognier, Condrieu",
+                type: "White",
+                sight: { "Clarity": "Clear", "Intensity of Color": "Medium", "Primary Color": "Gold", "Secondary Color(s)": [], "Tearing": "Medium Plus", "Gas Evidence": "No" },
+                nose: { "Aromatic Intensity": "Powerful", "Age Assessment": "Youthful", "Fruit": ["Peach", "Apricot", "Tangerine"], "Fruit Condition": "Ripe", "Non-Fruit": ["Honeysuckle", "Violet", "Perfume"], "Earth": "None", "Mineral": ["Stony"], "Oak": "Neutral Oak" },
+                palate: { "Sweetness": "Dry", "Acidity": "Medium", "Alcohol": "Medium Plus to High", "Body": "Full", "Phenolic Bitterness": "Slight", "Texture": "Oily", "Length of Finish": "Long", "Complexity": "High" },
+                conclusion: { finalGrape: "Viognier", finalCountry: "France", finalRegion: "Condrieu" }
+            },
+
+            // --- RED WINES --- //
+            {
+                name: "Pinot Noir, Côte de Nuits",
+                type: "Red",
+                sight: { "Clarity": "Clear", "Intensity of Color": "Pale", "Primary Color": "Ruby", "Secondary Color(s)": [], "Rim Variation": "Yes", "Staining": "Light", "Tearing": "Medium Plus" },
+                nose: { "Aromatic Intensity": "Medium Plus", "Age Assessment": "Developing", "Fruit": ["Cherry", "Raspberry", "Cranberry"], "Fruit Condition": "Tart", "Non-Fruit": ["Rose", "Violet", "Mushroom", "Forest Floor"], "Earth": "High Organic Earth", "Mineral": ["None"], "Oak": "Medium New Oak" },
+                palate: { "Sweetness": "Dry", "Acidity": "High", "Tannin Volume": "Medium", "Tannin Texture": "Silky", "Alcohol": "Medium Plus", "Body": "Medium", "Length of Finish": "Long", "Complexity": "High" },
+                conclusion: { finalGrape: "Pinot Noir", finalCountry: "France", finalRegion: "Côte de Nuits" }
+            },
+            {
+                name: "Pinot Noir, Sonoma Coast",
+                type: "Red",
+                sight: { "Clarity": "Clear", "Intensity of Color": "Medium", "Primary Color": "Ruby", "Secondary Color(s)": [], "Rim Variation": "No", "Staining": "Medium", "Tearing": "Heavy" },
+                nose: { "Aromatic Intensity": "Powerful", "Age Assessment": "Youthful", "Fruit": ["Black Cherry", "Pomegranate", "Strawberry Jam"], "Fruit Condition": "Ripe", "Non-Fruit": ["Cola", "Vanilla", "Toasted Oak"], "Earth": "Medium Organic Earth", "Mineral": ["None"], "Oak": "High New Oak" },
+                palate: { "Sweetness": "Dry", "Acidity": "Medium Plus", "Tannin Volume": "Medium Plus", "Tannin Texture": "Soft", "Alcohol": "High", "Body": "Medium Plus", "Length of Finish": "Long", "Complexity": "High" },
+                conclusion: { finalGrape: "Pinot Noir", finalCountry: "USA", finalRegion: "Sonoma Coast" }
+            },
+            {
+                name: "Cabernet Sauvignon, Left Bank Bordeaux",
+                type: "Red",
+                sight: { "Clarity": "Clear", "Intensity of Color": "Deep", "Primary Color": "Ruby", "Secondary Color(s)": ["Garnet"], "Rim Variation": "Yes", "Staining": "Heavy", "Tearing": "Heavy" },
+                nose: { "Aromatic Intensity": "Medium Plus", "Age Assessment": "Developing", "Fruit": ["Blackcurrant", "Black Cherry", "Plum"], "Fruit Condition": "Tart", "Non-Fruit": ["Graphite", "Cedar", "Tobacco", "Bell Pepper"], "Earth": "Medium Organic Earth", "Mineral": ["Gravel"], "Oak": "High New Oak" },
+                palate: { "Sweetness": "Dry", "Acidity": "High", "Tannin Volume": "High", "Tannin Texture": "Gritty", "Alcohol": "Medium Plus", "Body": "Full", "Length of Finish": "Long", "Complexity": "High" },
+                conclusion: { finalGrape: "Cabernet Sauvignon Blend", finalCountry: "France", finalRegion: "Left Bank Bordeaux" }
+            },
+            {
+                name: "Cabernet Sauvignon, Napa Valley",
+                type: "Red",
+                sight: { "Clarity": "Clear", "Intensity of Color": "Deep to Opaque", "Primary Color": "Purple", "Secondary Color(s)": ["Ruby"], "Rim Variation": "No", "Staining": "Heavy", "Tearing": "Heavy" },
+                nose: { "Aromatic Intensity": "Powerful", "Age Assessment": "Youthful", "Fruit": ["Blackberry", "Cassis", "Blueberry Compote"], "Fruit Condition": "Ripe", "Non-Fruit": ["Chocolate", "Vanilla", "Toasted Oak"], "Earth": "Low Organic Earth", "Mineral": ["None"], "Oak": "High New Oak" },
+                palate: { "Sweetness": "Dry", "Acidity": "Medium Plus", "Tannin Volume": "High", "Tannin Texture": "Coarse", "Alcohol": "High", "Body": "Full", "Length of Finish": "Long", "Complexity": "High" },
+                conclusion: { finalGrape: "Cabernet Sauvignon", finalCountry: "USA", finalRegion: "Napa Valley" }
+            },
+            {
+                name: "Syrah, Northern Rhône",
+                type: "Red",
+                sight: { "Clarity": "Clear", "Intensity of Color": "Deep", "Primary Color": "Purple", "Secondary Color(s)": [], "Rim Variation": "No", "Staining": "Heavy", "Tearing": "Heavy" },
+                nose: { "Aromatic Intensity": "Medium Plus", "Age Assessment": "Youthful", "Fruit": ["Blackberry", "Blueberry"], "Fruit Condition": "Tart", "Non-Fruit": ["Black Pepper", "Bacon Fat", "Smoked Meat", "Violet"], "Earth": "Medium Organic Earth", "Mineral": ["Granite"], "Oak": "Medium New Oak" },
+                palate: { "Sweetness": "Dry", "Acidity": "High", "Tannin Volume": "High", "Tannin Texture": "Gritty", "Alcohol": "Medium Plus", "Body": "Medium Plus", "Length of Finish": "Long", "Complexity": "High" },
+                conclusion: { finalGrape: "Syrah", finalCountry: "France", finalRegion: "Northern Rhône" }
+            },
+            {
+                name: "Shiraz, Barossa Valley",
+                type: "Red",
+                sight: { "Clarity": "Clear", "Intensity of Color": "Opaque", "Primary Color": "Purple", "Secondary Color(s)": [], "Rim Variation": "No", "Staining": "Heavy", "Tearing": "Heavy" },
+                nose: { "Aromatic Intensity": "Powerful", "Age Assessment": "Youthful", "Fruit": ["Blackberry Jam", "Fig", "Prune"], "Fruit Condition": "Jammy", "Non-Fruit": ["Eucalyptus", "Chocolate", "Vanilla", "Coconut"], "Earth": "Low Organic Earth", "Mineral": ["None"], "Oak": "High New Oak (American)" },
+                palate: { "Sweetness": "Dry", "Acidity": "Medium", "Tannin Volume": "High", "Tannin Texture": "Soft", "Alcohol": "High", "Body": "Full", "Length of Finish": "Long", "Complexity": "High" },
+                conclusion: { finalGrape: "Shiraz", finalCountry: "Australia", finalRegion: "Barossa Valley" }
+            },
+            {
+                name: "Grenache, Southern Rhône",
+                type: "Red",
+                sight: { "Clarity": "Clear", "Intensity of Color": "Medium", "Primary Color": "Garnet", "Secondary Color(s)": ["Ruby", "Orange"], "Rim Variation": "Yes", "Staining": "Medium", "Tearing": "Heavy" },
+                nose: { "Aromatic Intensity": "Medium Plus", "Age Assessment": "Developing", "Fruit": ["Strawberry", "Red Cherry", "Fig"], "Fruit Condition": "Dried/Desiccated", "Non-Fruit": ["Provençal Herbs", "Black Pepper", "Leather"], "Earth": "Medium Organic Earth", "Mineral": ["None"], "Oak": "Neutral Oak" },
+                palate: { "Sweetness": "Dry", "Acidity": "Medium", "Tannin Volume": "Medium Plus", "Tannin Texture": "Gritty", "Alcohol": "High", "Body": "Full", "Length of Finish": "Long", "Complexity": "High" },
+                conclusion: { finalGrape: "Grenache Blend", finalCountry: "France", finalRegion: "Southern Rhône" }
+            },
+            {
+                name: "Sangiovese, Chianti Classico Riserva",
+                type: "Red",
+                sight: { "Clarity": "Clear", "Intensity of Color": "Medium", "Primary Color": "Garnet", "Secondary Color(s)": ["Orange"], "Rim Variation": "Yes", "Staining": "Medium", "Tearing": "Medium Plus" },
+                nose: { "Aromatic Intensity": "Medium Plus", "Age Assessment": "Developing", "Fruit": ["Sour Cherry", "Cranberry", "Tomato Leaf"], "Fruit Condition": "Tart", "Non-Fruit": ["Leather", "Cedar", "Dried Herbs"], "Earth": "High Organic Earth", "Mineral": ["None"], "Oak": "Neutral Oak" },
+                palate: { "Sweetness": "Dry", "Acidity": "High", "Tannin Volume": "High", "Tannin Texture": "Gritty", "Alcohol": "Medium Plus", "Body": "Medium Plus", "Length of Finish": "Long", "Complexity": "High" },
+                conclusion: { finalGrape: "Sangiovese", finalCountry: "Italy", finalRegion: "Chianti Classico Riserva" }
+            },
+            {
+                name: "Nebbiolo, Barolo",
+                type: "Red",
+                sight: { "Clarity": "Clear", "Intensity of Color": "Pale", "Primary Color": "Garnet", "Secondary Color(s)": ["Orange"], "Rim Variation": "Yes", "Staining": "Medium", "Tearing": "Heavy" },
+                nose: { "Aromatic Intensity": "Powerful", "Age Assessment": "Developing", "Fruit": ["Sour Cherry", "Cranberry"], "Fruit Condition": "Tart", "Non-Fruit": ["Tar", "Rose Petal", "Anise", "Leather"], "Earth": "High Organic Earth", "Mineral": ["None"], "Oak": "Neutral Oak" },
+                palate: { "Sweetness": "Dry", "Acidity": "High", "Tannin Volume": "High", "Tannin Texture": "Coarse", "Alcohol": "High", "Body": "Full", "Length of Finish": "Long", "Complexity": "High" },
+                conclusion: { finalGrape: "Nebbiolo", finalCountry: "Italy", finalRegion: "Barolo" }
+            },
+            {
+                name: "Tempranillo, Rioja Gran Reserva",
+                type: "Red",
+                sight: { "Clarity": "Clear", "Intensity of Color": "Medium", "Primary Color": "Garnet", "Secondary Color(s)": ["Brown"], "Rim Variation": "Yes", "Staining": "Medium", "Tearing": "Medium Plus" },
+                nose: { "Aromatic Intensity": "Medium Plus", "Age Assessment": "Vinous (aged)", "Fruit": ["Dried Cherry", "Fig", "Prune"], "Fruit Condition": "Dried/Desiccated", "Non-Fruit": ["Dill", "Coconut", "Leather", "Cigar Box"], "Earth": "High Organic Earth", "Mineral": ["None"], "Oak": "High New Oak (American)" },
+                palate: { "Sweetness": "Dry", "Acidity": "Medium Plus", "Tannin Volume": "Medium Plus", "Tannin Texture": "Soft", "Alcohol": "Medium Plus", "Body": "Medium Plus", "Length of Finish": "Long", "Complexity": "High" },
+                conclusion: { finalGrape: "Tempranillo", finalCountry: "Spain", finalRegion: "Rioja Gran Reserva" }
+            },
+            {
+                name: "Gamay, Morgon",
+                type: "Red",
+                sight: { "Clarity": "Clear", "Intensity of Color": "Medium Minus", "Primary Color": "Ruby", "Secondary Color(s)": ["Magenta"], "Rim Variation": "No", "Staining": "Medium", "Tearing": "Medium" },
+                nose: { "Aromatic Intensity": "Medium Plus", "Age Assessment": "Youthful", "Fruit": ["Red Cherry", "Raspberry", "Cranberry"], "Fruit Condition": "Tart", "Non-Fruit": ["Bubblegum", "Banana", "Violets"], "Earth": "Low Inorganic Earth", "Mineral": ["Granite"], "Oak": "No New Oak" },
+                palate: { "Sweetness": "Dry", "Acidity": "High", "Tannin Volume": "Low", "Tannin Texture": "Silky", "Alcohol": "Medium", "Body": "Medium Minus", "Length of Finish": "Medium", "Complexity": "Medium" },
+                conclusion: { finalGrape: "Gamay", finalCountry: "France", finalRegion: "Morgon" }
+            },
+             {
+                name: "Merlot, Right Bank Bordeaux",
+                type: "Red",
+                sight: { "Clarity": "Clear", "Intensity of Color": "Deep", "Primary Color": "Ruby", "Secondary Color(s)": [], "Rim Variation": "Yes", "Staining": "Heavy", "Tearing": "Heavy" },
+                nose: { "Aromatic Intensity": "Medium Plus", "Age Assessment": "Developing", "Fruit": ["Black Plum", "Black Cherry", "Fig"], "Fruit Condition": "Ripe", "Non-Fruit": ["Chocolate", "Cedar", "Tobacco"], "Earth": "High Organic Earth (Clay)", "Mineral": ["None"], "Oak": "High New Oak" },
+                palate: { "Sweetness": "Dry", "Acidity": "Medium Plus", "Tannin Volume": "High", "Tannin Texture": "Soft", "Alcohol": "Medium Plus", "Body": "Full", "Length of Finish": "Long", "Complexity": "High" },
+                conclusion: { finalGrape: "Merlot Blend", finalCountry: "France", finalRegion: "Right Bank Bordeaux" }
+            },
+            {
+                name: "Zinfandel, Napa Valley",
+                type: "Red",
+                sight: { "Clarity": "Clear", "Intensity of Color": "Deep", "Primary Color": "Ruby", "Secondary Color(s)": ["Purple"], "Rim Variation": "No", "Staining": "Heavy", "Tearing": "Heavy" },
+                nose: { "Aromatic Intensity": "Powerful", "Age Assessment": "Youthful", "Fruit": ["Blackberry Jam", "Blueberry Pie", "Raisin"], "Fruit Condition": "Jammy", "Non-Fruit": ["Black Pepper", "Cedar", "Vanilla"], "Earth": "Medium Organic Earth", "Mineral": ["None"], "Oak": "High New Oak" },
+                palate: { "Sweetness": "Dry", "Acidity": "Medium", "Tannin Volume": "Medium Plus", "Tannin Texture": "Soft", "Alcohol": "Very High", "Body": "Full", "Length of Finish": "Long", "Complexity": "High" },
+                conclusion: { finalGrape: "Zinfandel", finalCountry: "USA", finalRegion: "Napa Valley" }
+            },
+            {
+                name: "Corvina Blend, Amarone della Valpolicella",
+                type: "Red",
+                sight: { "Clarity": "Clear", "Intensity of Color": "Deep", "Primary Color": "Garnet", "Secondary Color(s)": ["Brown"], "Rim Variation": "Yes", "Staining": "Heavy", "Tearing": "Heavy" },
+                nose: { "Aromatic Intensity": "Powerful", "Age Assessment": "Developing", "Fruit": ["Fig", "Date", "Raisin", "Prune"], "Fruit Condition": "Dried/Desiccated", "Non-Fruit": ["Chocolate", "Sweet Tobacco", "Balsamic Glaze"], "Earth": "Medium Organic Earth (Clay)", "Mineral": ["None"], "Oak": "Neutral Oak" },
+                palate: { "Sweetness": "Dry", "Acidity": "Medium Plus to High", "Tannin Volume": "High", "Tannin Texture": "Chewy", "Alcohol": "High to Very High", "Body": "Full", "Length of Finish": "Very Long", "Complexity": "High" },
+                conclusion: { finalGrape: "Corvina Blend", finalCountry: "Italy", finalRegion: "Amarone della Valpolicella" }
+            }
+        ];
+
+
+        // --- GAME LOGIC --- //
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const endScreen = document.getElementById('end-screen');
+
+        const startBtn = document.getElementById('start-btn');
+        const playAgainBtn = document.getElementById('play-again-btn');
+
+        const progressBar = document.querySelector('.progress-bar');
+        const questionCategoryEl = document.getElementById('question-category');
+        const questionTextEl = document.getElementById('question-text');
+        const answerOptionsContainer = document.getElementById('answer-options-container');
+        const scoreDisplay = document.getElementById('score-display');
+        
+        const finalScoreEl = document.getElementById('final-score');
+        const correctWineNameEl = document.getElementById('correct-wine-name');
+        const correctWineRegionEl = document.getElementById('correct-wine-region');
+
+
+        let currentParadigm = {};
+        let questions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+
+        const questionOrder = [
+            // Sight
+            { category: 'Sight', key: 'Clarity' },
+            { category: 'Sight', key: 'Intensity of Color' },
+            { category: 'Sight', key: 'Primary Color' },
+            // { category: 'Sight', key: 'Secondary Color(s)' }, // Multi-select is complex, skipping for now
+            { category: 'Sight', key: 'Tearing' },
+            // Red only sight
+            { category: 'Sight', key: 'Rim Variation', type: 'Red' },
+            { category: 'Sight', key: 'Staining', type: 'Red' },
+            
+            // Nose
+            { category: 'Nose', key: 'Aromatic Intensity' },
+            { category: 'Nose', key: 'Age Assessment' },
+            { category: 'Nose', key: 'Fruit Condition' },
+            { category: 'Nose', key: 'Oak' },
+            
+            // Palate
+            { category: 'Palate', key: 'Sweetness' },
+            { category: 'Palate', key: 'Acidity' },
+            { category: 'Palate', key: 'Alcohol' },
+            { category: 'Palate', key: 'Body' },
+            // Red only palate
+            { category: 'Palate', key: 'Tannin Volume', type: 'Red' },
+            { category: 'Palate', key: 'Tannin Texture', type: 'Red' },
+            { category: 'Palate', key: 'Length of Finish' },
+            { category: 'Palate', key: 'Complexity' },
+
+            // Conclusion
+            { category: 'Conclusion', key: 'Final Grape' },
+            { category: 'Conclusion', key: 'Final Region' },
+        ];
+        
+        function getDistractors(paradigm, categoryKey, questionKey, count) {
+            const correctAnswer = getNestedValue(paradigm, categoryKey, questionKey);
+            const distractors = new Set();
+            
+            const filteredParadigms = paradigms.filter(p => p.type === paradigm.type && p.name !== paradigm.name);
+
+            while (distractors.size < count) {
+                const randomParadigm = filteredParadigms[Math.floor(Math.random() * filteredParadigms.length)];
+                const potentialDistractor = getNestedValue(randomParadigm, categoryKey, questionKey);
+
+                if (potentialDistractor && potentialDistractor !== correctAnswer && !distractors.has(potentialDistractor)) {
+                   distractors.add(potentialDistractor);
+                }
+            }
+            return Array.from(distractors);
+        }
+
+        function getNestedValue(obj, cat, key) {
+            if (cat === 'Conclusion') return obj.conclusion[key.toLowerCase()];
+            return obj[cat.toLowerCase()][key];
+        }
+
+        function generateQuestionsForParadigm(paradigm) {
+            const generatedQuestions = [];
+            const relevantQuestions = questionOrder.filter(q => !q.type || q.type === paradigm.type);
+
+            relevantQuestions.forEach(qInfo => {
+                const question = {
+                    category: qInfo.category,
+                    text: `What is the wine's ${qInfo.key}?`,
+                    correctAnswer: getNestedValue(paradigm, qInfo.category, qInfo.key),
+                };
+                question.options = shuffle([question.correctAnswer, ...getDistractors(paradigm, qInfo.category, qInfo.key, 3)]);
+                generatedQuestions.push(question);
+            });
+            return generatedQuestions;
+        }
+
+        function startGame() {
+            currentParadigm = paradigms[Math.floor(Math.random() * paradigms.length)];
+            questions = generateQuestionsForParadigm(currentParadigm);
+            currentQuestionIndex = 0;
+            score = 0;
+            updateScoreDisplay();
+
+            startScreen.classList.remove('active');
+            endScreen.classList.remove('active');
+            gameScreen.classList.add('active');
+
+            displayNextQuestion();
+        }
+
+        function displayNextQuestion() {
+            if (currentQuestionIndex >= questions.length) {
+                endGame();
+                return;
+            }
+
+            const question = questions[currentQuestionIndex];
+            questionCategoryEl.textContent = question.category;
+            questionTextEl.textContent = question.text;
+            answerOptionsContainer.innerHTML = '';
+
+            question.options.forEach(option => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.classList.add('answer-btn');
+                button.addEventListener('click', () => selectAnswer(button, option));
+                answerOptionsContainer.appendChild(button);
+            });
+            
+            updateProgressBar();
+        }
+
+        function selectAnswer(button, selectedOption) {
+            const question = questions[currentQuestionIndex];
+            const buttons = answerOptionsContainer.querySelectorAll('.answer-btn');
+            
+            buttons.forEach(btn => btn.disabled = true); // Disable all buttons after one is clicked
+
+            if (selectedOption === question.correctAnswer) {
+                button.classList.add('correct');
+                score++;
+                updateScoreDisplay();
+            } else {
+                button.classList.add('incorrect');
+                // Highlight the correct answer
+                buttons.forEach(btn => {
+                    if (btn.textContent === question.correctAnswer) {
+                        btn.classList.add('correct');
+                    }
+                });
+            }
+
+            setTimeout(() => {
+                currentQuestionIndex++;
+                displayNextQuestion();
+            }, 1500); // Wait 1.5 seconds before next question
+        }
+        
+        function updateProgressBar() {
+            const progress = (currentQuestionIndex / questions.length) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+
+        function updateScoreDisplay() {
+            scoreDisplay.textContent = `Score: ${score}`;
+        }
+        
+        function endGame() {
+            gameScreen.classList.remove('active');
+            endScreen.classList.add('active');
+            finalScoreEl.textContent = `Your Final Score: ${score} / ${questions.length}`;
+            correctWineNameEl.textContent = currentParadigm.conclusion.finalGrape;
+            correctWineRegionEl.textContent = `${currentParadigm.conclusion.finalRegion}, ${currentParadigm.conclusion.finalCountry}`;
+        }
+
+        // --- UTILITY FUNCTIONS --- //
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // --- EVENT LISTENERS --- //
+        startBtn.addEventListener('click', startGame);
+        playAgainBtn.addEventListener('click', startGame);
+
+    </script>
+</body>
+</html>
+
