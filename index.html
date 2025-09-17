@@ -137,6 +137,10 @@
             cursor: pointer;
             transition: all 0.2s ease;
             text-align: center;
+            min-height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         .answer-btn:hover {
@@ -260,7 +264,6 @@
 
     <script>
         // --- PARADIGM DATABASE --- //
-        // This is the core data transcribed from your document.
         const paradigms = [
             // --- WHITE WINES --- //
             {
@@ -480,20 +483,16 @@
         const startScreen = document.getElementById('start-screen');
         const gameScreen = document.getElementById('game-screen');
         const endScreen = document.getElementById('end-screen');
-
         const startBtn = document.getElementById('start-btn');
         const playAgainBtn = document.getElementById('play-again-btn');
-
         const progressBar = document.querySelector('.progress-bar');
         const questionCategoryEl = document.getElementById('question-category');
         const questionTextEl = document.getElementById('question-text');
         const answerOptionsContainer = document.getElementById('answer-options-container');
         const scoreDisplay = document.getElementById('score-display');
-        
         const finalScoreEl = document.getElementById('final-score');
         const correctWineNameEl = document.getElementById('correct-wine-name');
         const correctWineRegionEl = document.getElementById('correct-wine-region');
-
 
         let currentParadigm = {};
         let questions = [];
@@ -501,66 +500,67 @@
         let score = 0;
 
         const questionOrder = [
-            // Sight
-            { category: 'Sight', key: 'Clarity' },
-            { category: 'Sight', key: 'Intensity of Color' },
-            { category: 'Sight', key: 'Primary Color' },
-            { category: 'Sight', key: 'Tearing' },
-            // Red only sight
-            { category: 'Sight', key: 'Rim Variation', type: 'Red' },
-            { category: 'Sight', key: 'Staining', type: 'Red' },
-            
-            // Nose
-            { category: 'Nose', key: 'Aromatic Intensity' },
-            { category: 'Nose', key: 'Age Assessment' },
-            { category: 'Nose', key: 'Fruit Condition' },
-            { category: 'Nose', key: 'Oak' },
-            
-            // Palate
-            { category: 'Palate', key: 'Sweetness' },
-            { category: 'Palate', key: 'Acidity' },
-            { category: 'Palate', key: 'Alcohol' },
-            { category: 'Palate', key: 'Body' },
-            // Red only palate
-            { category: 'Palate', key: 'Tannin Volume', type: 'Red' },
-            { category: 'Palate', key: 'Tannin Texture', type: 'Red' },
-            { category: 'Palate', key: 'Length of Finish' },
-            { category: 'Palate', key: 'Complexity' },
-
-            // Conclusion
-            { category: 'Conclusion', key: 'Final Grape' },
-            { category: 'Conclusion', key: 'Final Region' },
+            { category: 'Sight', key: 'Clarity' }, { category: 'Sight', key: 'Intensity of Color' }, { category: 'Sight', key: 'Primary Color' }, { category: 'Sight', key: 'Tearing' },
+            { category: 'Sight', key: 'Rim Variation', type: 'Red' }, { category: 'Sight', key: 'Staining', type: 'Red' },
+            { category: 'Nose', key: 'Aromatic Intensity' }, { category: 'Nose', key: 'Age Assessment' }, { category: 'Nose', key: 'Fruit Condition' }, { category: 'Nose', key: 'Oak' },
+            { category: 'Palate', key: 'Sweetness' }, { category: 'Palate', key: 'Acidity' }, { category: 'Palate', key: 'Alcohol' }, { category: 'Palate', key: 'Body' },
+            { category: 'Palate', key: 'Tannin Volume', type: 'Red' }, { category: 'Palate', key: 'Tannin Texture', type: 'Red' },
+            { category: 'Palate', key: 'Length of Finish' }, { category: 'Palate', key: 'Complexity' },
+            { category: 'Conclusion', key: 'Final Grape' }, { category: 'Conclusion', key: 'Final Region' },
         ];
         
-        function getDistractors(paradigm, categoryKey, questionKey, count) {
-            const correctAnswer = getNestedValue(paradigm, categoryKey, questionKey);
-            const distractors = new Set();
-            
-            const filteredParadigms = paradigms.filter(p => p.type === paradigm.type && p.name !== paradigm.name);
-
-            while (distractors.size < count && filteredParadigms.length > 0) {
-                const randomParadigm = filteredParadigms[Math.floor(Math.random() * filteredParadigms.length)];
-                const potentialDistractor = getNestedValue(randomParadigm, categoryKey, questionKey);
-
-                if (potentialDistractor && potentialDistractor !== correctAnswer && !distractors.has(potentialDistractor)) {
-                   distractors.add(potentialDistractor);
-                }
+        // --- UTILITY FUNCTIONS --- //
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
             }
-            return Array.from(distractors);
+            return array;
         }
 
-        /**
-         * CORRECTED FUNCTION
-         * This function now correctly formats the key to access conclusion properties.
-         * For example, it turns "Final Grape" into "finalGrape".
-         */
         function getNestedValue(obj, cat, key) {
             if (cat === 'Conclusion') {
-                // Convert "Final Grape" -> "finalGrape", "Final Region" -> "finalRegion"
                 const accessKey = key.charAt(0).toLowerCase() + key.slice(1).replace(/\s/g, '');
                 return obj.conclusion[accessKey];
             }
             return obj[cat.toLowerCase()][key];
+        }
+
+        /**
+         * ROBUST DISTRACTOR FUNCTION (FIXED)
+         * This function no longer gets stuck in loops. It intelligently gathers all possible
+         * unique answers for a given question to create a valid set of distractors.
+         */
+        function getDistractors(paradigm, categoryKey, questionKey, count) {
+            const correctAnswer = getNestedValue(paradigm, categoryKey, questionKey);
+            const distractors = new Set();
+            
+            const allPossibleValues = new Set(
+                paradigms
+                    .filter(p => p.type === paradigm.type)
+                    .map(p => getNestedValue(p, categoryKey, questionKey))
+                    .filter(val => val !== undefined && val !== correctAnswer)
+            );
+
+            const shuffledValues = shuffle(Array.from(allPossibleValues));
+            
+            for(let i = 0; i < Math.min(count, shuffledValues.length); i++) {
+                distractors.add(shuffledValues[i]);
+            }
+            
+            if (distractors.size < count) {
+                const otherTypeValues = new Set(
+                    paradigms
+                        .map(p => getNestedValue(p, categoryKey, questionKey))
+                        .filter(val => val !== undefined && val !== correctAnswer && !distractors.has(val))
+                );
+                const shuffledOtherValues = shuffle(Array.from(otherTypeValues));
+                for(let i = 0; i < Math.min(count - distractors.size, shuffledOtherValues.length); i++) {
+                    distractors.add(shuffledOtherValues[i]);
+                }
+            }
+
+            return Array.from(distractors);
         }
 
         function generateQuestionsForParadigm(paradigm) {
@@ -569,18 +569,32 @@
 
             relevantQuestions.forEach(qInfo => {
                 const correctAnswer = getNestedValue(paradigm, qInfo.category, qInfo.key);
-                if(correctAnswer === undefined) {
-                    // Skip question if the paradigm doesn't have this specific data point.
-                    // This can happen for optional fields like Secondary Color.
-                    console.warn(`Skipping question for ${paradigm.name}: ${qInfo.key} is undefined.`);
-                    return;
-                }
+                if(correctAnswer === undefined) return;
+
                 const question = {
                     category: qInfo.category,
                     text: qInfo.key === 'Final Grape' ? 'What is the Grape Variety?' : (qInfo.key === 'Final Region' ? 'What is the Region?' : `What is the wine's ${qInfo.key}?`),
                     correctAnswer: correctAnswer,
                 };
-                question.options = shuffle([question.correctAnswer, ...getDistractors(paradigm, qInfo.category, qInfo.key, 3)]);
+
+                const distractors = getDistractors(paradigm, qInfo.category, qInfo.key, 3);
+                const options = [question.correctAnswer, ...distractors];
+
+                // Ensure we have 4 options, even if distractors are few
+                while (options.length < 2 && options.length < paradigms.length) {
+                    let randomParadigm = paradigms[Math.floor(Math.random() * paradigms.length)];
+                    let potentialOption = getNestedValue(randomParadigm, qInfo.category, qInfo.key);
+                    if (potentialOption && !options.includes(potentialOption)) {
+                        options.push(potentialOption);
+                    }
+                }
+                 // If only one option exists for a question (like Clarity), duplicate it to fill space.
+                while(options.length < 4 && options.length > 0) {
+                     options.push(options[0]);
+                }
+
+
+                question.options = shuffle(options.slice(0, 4));
                 generatedQuestions.push(question);
             });
             return generatedQuestions;
@@ -626,7 +640,7 @@
             const question = questions[currentQuestionIndex];
             const buttons = answerOptionsContainer.querySelectorAll('.answer-btn');
             
-            buttons.forEach(btn => btn.disabled = true); // Disable all buttons after one is clicked
+            buttons.forEach(btn => btn.disabled = true);
 
             if (selectedOption === question.correctAnswer) {
                 button.classList.add('correct');
@@ -634,7 +648,6 @@
                 updateScoreDisplay();
             } else {
                 button.classList.add('incorrect');
-                // Highlight the correct answer
                 buttons.forEach(btn => {
                     if (btn.textContent === question.correctAnswer) {
                         btn.classList.add('correct');
@@ -645,7 +658,7 @@
             setTimeout(() => {
                 currentQuestionIndex++;
                 displayNextQuestion();
-            }, 1500); // Wait 1.5 seconds before next question
+            }, 1500);
         }
         
         function updateProgressBar() {
@@ -663,15 +676,6 @@
             finalScoreEl.textContent = `Your Final Score: ${score} / ${questions.length}`;
             correctWineNameEl.textContent = currentParadigm.conclusion.finalGrape;
             correctWineRegionEl.textContent = `${currentParadigm.conclusion.finalRegion}, ${currentParadigm.conclusion.finalCountry}`;
-        }
-
-        // --- UTILITY FUNCTIONS --- //
-        function shuffle(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-            return array;
         }
 
         // --- EVENT LISTENERS --- //
