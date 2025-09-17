@@ -224,12 +224,14 @@
 
     <div class="game-container">
 
+        <!-- Start Screen -->
         <div id="start-screen" class="screen active">
             <h1>The Sommelier's Cadence</h1>
             <p>Welcome to your virtual tasting room. A classic wine has been poured. Follow the deductive tasting grid to identify it. Your speed and accuracy are key. Good luck.</p>
             <button id="start-btn" class="btn">Begin Tasting</button>
         </div>
 
+        <!-- Game Screen -->
         <div id="game-screen" class="screen">
             <div id="score-display">Score: 0</div>
             <div class="progress-bar-container">
@@ -238,9 +240,11 @@
             <h2 id="question-category">Sight</h2>
             <p id="question-text">What is the wine's intensity of color?</p>
             <div id="answer-options-container" class="answer-options">
-                </div>
+                <!-- Answer buttons will be dynamically inserted here -->
+            </div>
         </div>
 
+        <!-- End Screen -->
         <div id="end-screen" class="screen">
             <h2>Tasting Complete</h2>
             <p id="final-score">Your Final Score: 18/20</p>
@@ -256,6 +260,7 @@
 
     <script>
         // --- PARADIGM DATABASE --- //
+        // This is the core data transcribed from your document.
         const paradigms = [
             // --- WHITE WINES --- //
             {
@@ -354,6 +359,7 @@
                 palate: { "Sweetness": "Dry", "Acidity": "Medium", "Alcohol": "Medium Plus to High", "Body": "Full", "Phenolic Bitterness": "Slight", "Texture": "Oily", "Length of Finish": "Long", "Complexity": "High" },
                 conclusion: { finalGrape: "Viognier", finalCountry: "France", finalRegion: "Condrieu" }
             },
+
             // --- RED WINES --- //
             {
                 name: "Pinot Noir, Côte de Nuits",
@@ -499,7 +505,6 @@
             { category: 'Sight', key: 'Clarity' },
             { category: 'Sight', key: 'Intensity of Color' },
             { category: 'Sight', key: 'Primary Color' },
-            // { category: 'Sight', key: 'Secondary Color(s)' }, // Multi-select is complex, skipping for now
             { category: 'Sight', key: 'Tearing' },
             // Red only sight
             { category: 'Sight', key: 'Rim Variation', type: 'Red' },
@@ -544,17 +549,17 @@
             return Array.from(distractors);
         }
 
-        // --- THIS IS THE CORRECTED FUNCTION --- //
+        /**
+         * CORRECTED FUNCTION
+         * This function now correctly formats the key to access conclusion properties.
+         * For example, it turns "Final Grape" into "finalGrape".
+         */
         function getNestedValue(obj, cat, key) {
             if (cat === 'Conclusion') {
-                // Converts a key like "Final Grape" to "finalGrape"
-                const camelCaseKey = key.split(' ').map((word, index) => {
-                    if (index === 0) return word.toLowerCase();
-                    return word.charAt(0).toUpperCase() + word.slice(1);
-                }).join('');
-                return obj.conclusion[camelCaseKey];
+                // Convert "Final Grape" -> "finalGrape", "Final Region" -> "finalRegion"
+                const accessKey = key.charAt(0).toLowerCase() + key.slice(1).replace(/\s/g, '');
+                return obj.conclusion[accessKey];
             }
-            // For all other categories, the key matches the data exactly
             return obj[cat.toLowerCase()][key];
         }
 
@@ -563,10 +568,17 @@
             const relevantQuestions = questionOrder.filter(q => !q.type || q.type === paradigm.type);
 
             relevantQuestions.forEach(qInfo => {
+                const correctAnswer = getNestedValue(paradigm, qInfo.category, qInfo.key);
+                if(correctAnswer === undefined) {
+                    // Skip question if the paradigm doesn't have this specific data point.
+                    // This can happen for optional fields like Secondary Color.
+                    console.warn(`Skipping question for ${paradigm.name}: ${qInfo.key} is undefined.`);
+                    return;
+                }
                 const question = {
                     category: qInfo.category,
-                    text: `What is the wine's ${qInfo.key}?`,
-                    correctAnswer: getNestedValue(paradigm, qInfo.category, qInfo.key),
+                    text: qInfo.key === 'Final Grape' ? 'What is the Grape Variety?' : (qInfo.key === 'Final Region' ? 'What is the Region?' : `What is the wine's ${qInfo.key}?`),
+                    correctAnswer: correctAnswer,
                 };
                 question.options = shuffle([question.correctAnswer, ...getDistractors(paradigm, qInfo.category, qInfo.key, 3)]);
                 generatedQuestions.push(question);
@@ -669,3 +681,5 @@
     </script>
 </body>
 </html>
+
+
