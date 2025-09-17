@@ -429,7 +429,10 @@
                 textInputResults.innerHTML = `<p><strong>Score: +${points} points!</strong></p><p>Correct Call: <span class="found-keyword">${currentParadigm.conclusion.finalRegion.join(', ')}</span></p>`;
             } else { // 'text' type
                 aromaInput.disabled = true;
+                
+                // BUG FIX: This is the corrected and robust way to find the source key.
                 const sourceKey = question.source;
+                
                 const correctKeywords = currentParadigm.aromaProfile[sourceKey] || [];
 
                 if (correctKeywords.length === 0) {
