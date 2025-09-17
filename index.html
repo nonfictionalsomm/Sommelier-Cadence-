@@ -317,9 +317,19 @@
         const questionOrder = [
             { category: 'Sight', key: 'Clarity', type: 'mc' }, { category: 'Sight', key: 'Intensity of Color', type: 'mc' }, { category: 'Sight', key: 'Primary Color', type: 'mc' }, { category: 'Sight', key: 'Tearing', type: 'mc' }, { category: 'Sight', key: 'Rim Variation', wineType: 'Red', type: 'mc' }, { category: 'Sight', key: 'Staining', wineType: 'Red', type: 'mc' },
             { category: 'Nose', key: 'Aromatic Intensity', type: 'mc' }, { category: 'Nose', key: 'Age Assessment', type: 'mc' },
-            { category: 'Nose', key: 'Fruit', type: 'text' }, { category: 'Nose', key: 'Fruit Condition', type: 'mc' }, { category: 'Nose', key: 'Non-Fruit', type: 'text' }, { category: 'Nose', key: 'Earth', type: 'text' }, { category: 'Nose', key: 'Mineral', type: 'text' }, { category: 'Nose', key: 'Oak', type: 'mc' }, { category: 'Nose', key: 'Oak Aromas', type: 'text' },
+            { category: 'Nose', key: 'Fruit', type: 'text', source: 'fruit' }, 
+            { category: 'Nose', key: 'Fruit Condition', type: 'mc' }, 
+            { category: 'Nose', key: 'Non-Fruit', type: 'text', source: 'nonFruit' }, 
+            { category: 'Nose', key: 'Earth', type: 'text', source: 'earth' }, 
+            { category: 'Nose', key: 'Mineral', type: 'text', source: 'mineral' }, 
+            { category: 'Nose', key: 'Oak', type: 'mc' }, 
+            { category: 'Nose', key: 'Oak Aromas', type: 'text', source: 'oakAromas' },
             { category: 'Palate', key: 'Sweetness', type: 'mc' }, { category: 'Palate', key: 'Acidity', type: 'mc' }, { category: 'Palate', key: 'Alcohol', type: 'mc' }, { category: 'Palate', key: 'Body', type: 'mc' }, { category: 'Palate', key: 'Tannin Volume', wineType: 'Red', type: 'mc' }, { category: 'Palate', key: 'Tannin Texture', wineType: 'Red', type: 'mc' },
-            { category: 'Palate', key: 'Fruit', type: 'text', source: 'fruit' }, { category: 'Palate', key: 'Non-Fruit', type: 'text', source: 'nonFruit' }, { category: 'Palate', key: 'Earth', type: 'text', source: 'earth' }, { category: 'Palate', key: 'Mineral', type: 'text', source: 'mineral' }, { category: 'Palate', key: 'Oak Flavors', type: 'text', source: 'oakAromas' },
+            { category: 'Palate', key: 'Fruit', type: 'text', source: 'fruit' }, 
+            { category: 'Palate', key: 'Non-Fruit', type: 'text', source: 'nonFruit' }, 
+            { category: 'Palate', key: 'Earth', type: 'text', source: 'earth' }, 
+            { category: 'Palate', key: 'Mineral', type: 'text', source: 'mineral' }, 
+            { category: 'Palate', key: 'Oak Flavors', type: 'text', source: 'oakAromas' },
             { category: 'Palate', key: 'Length of Finish', type: 'mc' }, { category: 'Palate', key: 'Complexity', type: 'mc' },
             { category: 'Conclusion', key: 'Final Grape', type: 'mc' }, { category: 'Conclusion', key: 'Final Region', type: 'text-final' }
         ];
@@ -419,7 +429,7 @@
                 textInputResults.innerHTML = `<p><strong>Score: +${points} points!</strong></p><p>Correct Call: <span class="found-keyword">${currentParadigm.conclusion.finalRegion.join(', ')}</span></p>`;
             } else { // 'text' type
                 aromaInput.disabled = true;
-                const sourceKey = (question.source || question.key).toLowerCase().replace(' aromas', '').replace(' flavors', '');
+                const sourceKey = question.source;
                 const correctKeywords = currentParadigm.aromaProfile[sourceKey] || [];
 
                 if (correctKeywords.length === 0) {
