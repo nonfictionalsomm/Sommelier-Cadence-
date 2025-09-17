@@ -67,6 +67,14 @@
             margin-bottom: 30px;
         }
 
+        #target-wine-reveal {
+            font-family: var(--font-serif);
+            font-size: 2.2rem;
+            color: var(--primary-color);
+            font-weight: 700;
+            margin-top: 20px;
+        }
+
         .btn {
             background-color: var(--primary-color);
             color: var(--bg-color);
@@ -88,6 +96,14 @@
 
         #game-screen {
             position: relative;
+        }
+
+        #target-wine-reminder {
+            font-size: 0.9rem;
+            font-weight: 300;
+            color: #aaa;
+            margin-bottom: 15px;
+            font-style: italic;
         }
 
         .progress-bar-container {
@@ -223,22 +239,24 @@
 
     <div class="game-container">
         <div id="start-screen" class="screen active">
-            <h1>The Sommelier's Cadence</h1>
-            <p>Welcome to your virtual tasting room. A classic wine has been poured. Follow the deductive tasting grid to identify it. Your speed and accuracy are key. Good luck.</p>
+            <h1 id="start-title">The Sommelier's Cadence</h1>
+            <p id="start-text">Welcome to your virtual tasting room. Your goal is to correctly describe a classic wine paradigm from memory. Press the button to receive your assignment.</p>
             <button id="start-btn" class="btn">Begin Tasting</button>
+            <div id="target-wine-reveal" style="display: none;"></div>
         </div>
         <div id="game-screen" class="screen">
             <div id="score-display">Score: 0</div>
+            <p id="target-wine-reminder">Target: Sancerre</p>
             <div class="progress-bar-container"><div class="progress-bar"></div></div>
             <h2 id="question-category">Sight</h2>
             <p id="question-text">What is the wine's intensity of color?</p>
             <div id="answer-options-container" class="answer-options"></div>
         </div>
         <div id="end-screen" class="screen">
-            <h2>Tasting Complete</h2>
+            <h2>Rehearsal Complete</h2>
             <p id="final-score">Your Final Score: 18/20</p>
             <div id="correct-wine-info">
-                <p style="margin-top:0; font-weight:bold;">The wine was:</p>
+                <p style="margin-top:0; font-weight:bold;">You were describing:</p>
                 <h3 id="correct-wine-name">Chardonnay</h3>
                 <p id="correct-wine-region">Napa Valley, USA</p>
             </div>
@@ -277,36 +295,19 @@
             { name: "Corvina Blend, Amarone della Valpolicella", type: "Red", sight: { "Clarity": "Clear", "Intensity of Color": "Deep", "Primary Color": "Garnet", "Rim Variation": "Yes", Staining: "Heavy", Tearing: "Heavy" }, nose: { "Aromatic Intensity": "Powerful", "Age Assessment": "Developing", "Fruit Condition": "Dried/Desiccated", Oak: "Neutral Oak" }, palate: { Sweetness: "Dry", Acidity: "Medium Plus to High", "Tannin Volume": "High", "Tannin Texture": "Chewy", Alcohol: "High to Very High", Body: "Full", "Length of Finish": "Very Long", Complexity: "High" }, conclusion: { finalGrape: "Corvina Blend", finalCountry: "Italy", finalRegion: "Amarone della Valpolicella" } }
         ];
 
-        // --- STATIC GRID OPTIONS (THE FIX!) --- //
         const gridOptions = {
-            "Clarity": ["Clear", "Hazy", "Cloudy"],
-            "Intensity of Color": ["Water White", "Pale", "Medium", "Deep", "Opaque", "Medium to Deep", "Medium Minus"],
-            "Primary Color": ["Straw", "Yellow", "Gold", "Purple", "Ruby", "Garnet"],
-            "Tearing": ["Light", "Medium", "Medium Plus", "Heavy"],
-            "Rim Variation": ["Yes", "No"],
-            "Staining": ["None", "Light", "Medium", "Heavy"],
-            "Aromatic Intensity": ["Delicate", "Medium", "Medium Plus", "Powerful"],
-            "Age Assessment": ["Youthful", "Developing", "Vinous (aged)"],
-            "Fruit Condition": ["Tart", "Ripe", "Baked", "Jammy", "Dried/Desiccated", "Tart to Just-Ripe"],
-            "Oak": ["No New Oak", "Neutral Oak", "Medium New Oak", "High New Oak", "High New Oak (American)"],
-            "Sweetness": ["Bone Dry", "Dry", "Off-Dry"],
-            "Acidity": ["Low", "Medium", "Medium Plus", "High", "Medium Plus to High"],
-            "Alcohol": ["Low", "Medium Minus", "Medium", "Medium Plus", "High", "Very High", "Low to Medium Minus", "Medium to Medium Plus", "Medium Plus to High", "High to Very High"],
-            "Body": ["Light", "Medium Minus", "Medium", "Medium Plus", "Full"],
-            "Tannin Volume": ["Low", "Medium", "Medium Plus", "High"],
-            "Tannin Texture": ["Silky", "Soft", "Gritty", "Coarse", "Chewy"],
-            "Length of Finish": ["Short", "Medium", "Medium Plus", "Long", "Very Long"],
-            "Complexity": ["Simple", "Medium", "Medium Plus", "High"],
-            "Final Grape": paradigms.map(p => p.conclusion.finalGrape),
-            "Final Region": paradigms.map(p => p.conclusion.finalRegion)
+            "Clarity": ["Clear", "Hazy", "Cloudy"], "Intensity of Color": ["Water White", "Pale", "Medium", "Deep", "Opaque", "Medium to Deep", "Medium Minus"], "Primary Color": ["Straw", "Yellow", "Gold", "Purple", "Ruby", "Garnet"], "Tearing": ["Light", "Medium", "Medium Plus", "Heavy"], "Rim Variation": ["Yes", "No"], "Staining": ["None", "Light", "Medium", "Heavy"], "Aromatic Intensity": ["Delicate", "Medium", "Medium Plus", "Powerful"], "Age Assessment": ["Youthful", "Developing", "Vinous (aged)"], "Fruit Condition": ["Tart", "Ripe", "Baked", "Jammy", "Dried/Desiccated", "Tart to Just-Ripe"], "Oak": ["No New Oak", "Neutral Oak", "Medium New Oak", "High New Oak", "High New Oak (American)"], "Sweetness": ["Bone Dry", "Dry", "Off-Dry"], "Acidity": ["Low", "Medium", "Medium Plus", "High", "Medium Plus to High"], "Alcohol": ["Low", "Medium Minus", "Medium", "Medium Plus", "High", "Very High", "Low to Medium Minus", "Medium to Medium Plus", "Medium Plus to High", "High to Very High"], "Body": ["Light", "Medium Minus", "Medium", "Medium Plus", "Full"], "Tannin Volume": ["Low", "Medium", "Medium Plus", "High"], "Tannin Texture": ["Silky", "Soft", "Gritty", "Coarse", "Chewy"], "Length of Finish": ["Short", "Medium", "Medium Plus", "Long", "Very Long"], "Complexity": ["Simple", "Medium", "Medium Plus", "High"], "Final Grape": paradigms.map(p => p.conclusion.finalGrape), "Final Region": paradigms.map(p => p.conclusion.finalRegion)
         };
 
-        // --- GAME LOGIC --- //
         const startScreen = document.getElementById('start-screen');
         const gameScreen = document.getElementById('game-screen');
         const endScreen = document.getElementById('end-screen');
         const startBtn = document.getElementById('start-btn');
         const playAgainBtn = document.getElementById('play-again-btn');
+        const startTitle = document.getElementById('start-title');
+        const startText = document.getElementById('start-text');
+        const targetWineReveal = document.getElementById('target-wine-reveal');
+        const targetWineReminder = document.getElementById('target-wine-reminder');
         const progressBar = document.querySelector('.progress-bar');
         const questionCategoryEl = document.getElementById('question-category');
         const questionTextEl = document.getElementById('question-text');
@@ -322,13 +323,7 @@
         let score = 0;
 
         const questionOrder = [
-            { category: 'Sight', key: 'Clarity' }, { category: 'Sight', key: 'Intensity of Color' }, { category: 'Sight', key: 'Primary Color' }, { category: 'Sight', key: 'Tearing' },
-            { category: 'Sight', key: 'Rim Variation', type: 'Red' }, { category: 'Sight', key: 'Staining', type: 'Red' },
-            { category: 'Nose', key: 'Aromatic Intensity' }, { category: 'Nose', key: 'Age Assessment' }, { category: 'Nose', key: 'Fruit Condition' }, { category: 'Nose', key: 'Oak' },
-            { category: 'Palate', key: 'Sweetness' }, { category: 'Palate', key: 'Acidity' }, { category: 'Palate', key: 'Alcohol' }, { category: 'Palate', key: 'Body' },
-            { category: 'Palate', key: 'Tannin Volume', type: 'Red' }, { category: 'Palate', key: 'Tannin Texture', type: 'Red' },
-            { category: 'Palate', key: 'Length of Finish' }, { category: 'Palate', key: 'Complexity' },
-            { category: 'Conclusion', key: 'Final Grape' }, { category: 'Conclusion', key: 'Final Region' },
+            { category: 'Sight', key: 'Clarity' }, { category: 'Sight', key: 'Intensity of Color' }, { category: 'Sight', key: 'Primary Color' }, { category: 'Sight', key: 'Tearing' }, { category: 'Sight', key: 'Rim Variation', type: 'Red' }, { category: 'Sight', key: 'Staining', type: 'Red' }, { category: 'Nose', key: 'Aromatic Intensity' }, { category: 'Nose', key: 'Age Assessment' }, { category: 'Nose', key: 'Fruit Condition' }, { category: 'Nose', key: 'Oak' }, { category: 'Palate', key: 'Sweetness' }, { category: 'Palate', key: 'Acidity' }, { category: 'Palate', key: 'Alcohol' }, { category: 'Palate', key: 'Body' }, { category: 'Palate', key: 'Tannin Volume', type: 'Red' }, { category: 'Palate', key: 'Tannin Texture', type: 'Red' }, { category: 'Palate', key: 'Length of Finish' }, { category: 'Palate', key: 'Complexity' }, { category: 'Conclusion', key: 'Final Grape' }, { category: 'Conclusion', key: 'Final Region' },
         ];
         
         function shuffle(array) {
@@ -346,7 +341,7 @@
                 const accessKey = key.charAt(0).toLowerCase() + key.slice(1).replace(/\s/g, '');
                 return obj.conclusion[accessKey];
             }
-            return obj[cat.toLowerCase()][key];
+            return obj[cat.toLowerCase()]?.[key];
         }
         
         function getDistractors(correctAnswer, questionKey, count) {
@@ -358,46 +353,50 @@
         function generateQuestionsForParadigm(paradigm) {
             const generatedQuestions = [];
             const relevantQuestions = questionOrder.filter(q => !q.type || q.type === paradigm.type);
-
             relevantQuestions.forEach(qInfo => {
                 const correctAnswer = getNestedValue(paradigm, qInfo.category, qInfo.key);
                 if (correctAnswer === undefined) return;
-
                 const distractors = getDistractors(correctAnswer, qInfo.key, 3);
                 let options = [correctAnswer, ...distractors];
-                
-                // Ensure there are always 4 unique options if possible
                 if (options.length < 4) {
                     const allPossible = Array.from(new Set(gridOptions[qInfo.key]));
                     const remainingOptions = allPossible.filter(opt => !options.includes(opt));
                     options.push(...shuffle(remainingOptions).slice(0, 4 - options.length));
                 }
-
-                // If still not enough, duplicate options (last resort)
                 while (options.length > 0 && options.length < 4) {
-                    options.push(options[0]);
+                    options.push(options[Math.floor(Math.random() * options.length)]);
                 }
-                
                 generatedQuestions.push({
                     category: qInfo.category,
                     text: qInfo.key === 'Final Grape' ? 'What is the Grape Variety?' : (qInfo.key === 'Final Region' ? 'What is the Region?' : `What is the wine's ${qInfo.key}?`),
                     correctAnswer: correctAnswer,
-                    options: shuffle(options.slice(0, 4))
+                    options: shuffle(Array.from(new Set(options)).slice(0, 4))
                 });
             });
             return generatedQuestions;
         }
-
-        function startGame() {
-            currentParadigm = paradigms[Math.floor(Math.random() * paradigms.length)];
+        
+        function actualGameStart() {
             questions = generateQuestionsForParadigm(currentParadigm);
             currentQuestionIndex = 0;
             score = 0;
             updateScoreDisplay();
+            targetWineReminder.textContent = `Target: ${currentParadigm.name}`;
             startScreen.classList.remove('active');
             endScreen.classList.remove('active');
             gameScreen.classList.add('active');
             displayNextQuestion();
+        }
+
+        function beginReveal() {
+            currentParadigm = paradigms[Math.floor(Math.random() * paradigms.length)];
+            startTitle.textContent = "Your wine is...";
+            startText.style.display = 'none';
+            startBtn.style.display = 'none';
+            targetWineReveal.textContent = currentParadigm.name;
+            targetWineReveal.style.display = 'block';
+            
+            setTimeout(actualGameStart, 3000);
         }
 
         function displayNextQuestion() {
@@ -450,6 +449,13 @@
             scoreDisplay.textContent = `Score: ${score}`;
         }
         
+        function resetStartScreen() {
+            startTitle.textContent = "The Sommelier's Cadence";
+            startText.style.display = 'block';
+            startBtn.style.display = 'block';
+            targetWineReveal.style.display = 'none';
+        }
+
         function endGame() {
             gameScreen.classList.remove('active');
             endScreen.classList.add('active');
@@ -458,8 +464,12 @@
             correctWineRegionEl.textContent = `${currentParadigm.conclusion.finalRegion}, ${currentParadigm.conclusion.finalCountry}`;
         }
 
-        startBtn.addEventListener('click', startGame);
-        playAgainBtn.addEventListener('click', startGame);
+        startBtn.addEventListener('click', beginReveal);
+        playAgainBtn.addEventListener('click', () => {
+            endScreen.classList.remove('active');
+            resetStartScreen();
+            startScreen.classList.add('active');
+        });
     </script>
 </body>
 </html>
